@@ -145,9 +145,9 @@ static SDL_Color background_col = {0, 0, 0, 255},
     text_col = {224, 224, 224, 255},
     warn_col = {192, 64, 0, 255},
     ok_col = {32, 128, 3, 255},
-    elapsed_col = {0, 32, 255, 255},
+	elapsed_col = {0, 178, 162, 255},
     cursor_col = {192, 0, 0, 255},
-    selected_col = {0, 48, 64, 255},
+	selected_col = {0, 55, 6, 255},
     detail_col = {128, 128, 128, 255},
     needle_col = {255, 255, 255, 255};
 
