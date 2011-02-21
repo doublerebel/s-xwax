@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <unistd.h>
 
 #include <SDL.h> /* may override main() */
@@ -61,6 +62,7 @@ static void usage(FILE *fd)
       "  -45            Use timecode at 45RPM\n"
       "  -i <program>   Importer (default '%s')\n"
       "  -s <program>   Library scanner (default '%s')\n"
+      "  -dp            Enable deck protection\n"
       "  -h             Display this message\n\n",
       DEFAULT_IMPORTER, DEFAULT_SCANNER);
 
@@ -101,6 +103,8 @@ int main(int argc, char *argv[])
     int r, n, decks, oss_fragment, oss_buffers, rate, alsa_buffer;
     char *endptr, *timecode, *importer, *scanner;
     double speed;
+
+    bool deck_protection = false;
 
     struct device_t device[MAX_DECKS];
     struct track_t track[MAX_DECKS];
@@ -386,6 +390,12 @@ int main(int argc, char *argv[])
             argv += 2;
             argc -= 2;
 
+        } else if (!strcmp(argv[0], "-dp")) {
+            deck_protection = true;
+
+            argv++;
+            argc--;
+
         } else {
             fprintf(stderr, "'%s' argument is unknown; try -h.\n", argv[0]);
             return -1;
@@ -402,6 +412,13 @@ int main(int argc, char *argv[])
         return -1;
     if (interface_start(&iface, decks, player, timecoder, &library, &rig) == -1)
         return -1;
+
+    /* initialise deck_protection */
+
+    if (deck_protection) {
+        for (n = 0; n < decks; n++)
+            player[n].deck_protection = true;
+    }
 
     if (rig_main(&rig) == -1)
         return -1;
