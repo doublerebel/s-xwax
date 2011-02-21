@@ -501,11 +501,18 @@ static void draw_clock(SDL_Surface *surface, const struct rect_t *rect, int t,
  * deck protection (not yet)
  * rpm (not yet) */
 
-static void draw_deck_info(SDL_Surface *surface, const struct rect_t *rect)
+static void draw_deck_info(SDL_Surface *surface, const struct rect_t *rect,
+                           const struct player_t *pl)
 {
-    char deckp[21];
+    char deckp[25];
 
-    sprintf(deckp, "Deckinfo placeholder");
+    if (pl->deck_protection) {
+        if (pl->playing && pl->timecode_control && pl->track->length)
+            sprintf(deckp, "Deck protected: Yes");
+        else
+            sprintf(deckp, "Deck protected: No");
+    } else
+        sprintf(deckp, "Deck protection disabled");
 
     draw_font_rect(surface, rect, deckp, font, text_col, background_col);
 }
@@ -824,7 +831,7 @@ static void draw_deck_top(SDL_Surface *surface, const struct rect_t *rect,
             draw_deck_clocks(surface, rect, pl);
         else {
             draw_deck_clocks(surface, &clocks, pl);
-            draw_deck_info(surface, &right);
+            draw_deck_info(surface, &right, pl);
         }
         return;
     }
@@ -844,7 +851,7 @@ static void draw_deck_top(SDL_Surface *surface, const struct rect_t *rect,
     draw_scope(surface, &scope, pl->timecoder);
     if (mid.w < INFO_WIDTH)
         return;
-    draw_deck_info(surface, &mid);
+    draw_deck_info(surface, &mid, pl);
 }
 
 
