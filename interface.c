@@ -1287,8 +1287,15 @@ static bool handle_key(struct interface_t *in, struct selector_t *sel,
 
             case FUNC_LOAD:
                 re = selector_current(sel);
-                if (re != NULL)
+                if (re != NULL) {
+                    if (pl->deck_protection) {
+                        if (pl->playing && pl->timecode_control && pl->track->length) {
+                            fprintf(stderr, "Deck %d is locked!\n", deck);
+                            break;
+                        }
+                    }
                     do_loading(in, pl->track, re);
+                }
                 break;
 
             case FUNC_RECUE:
