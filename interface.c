@@ -89,6 +89,8 @@
 
 #define CLOCKS_WIDTH 160
 
+#define INFO_WIDTH 100
+
 #define SPINNER_SIZE (CLOCK_FONT_SIZE * 2 - 6)
 #define SCOPE_SIZE (CLOCK_FONT_SIZE * 2 - 6)
 
@@ -495,6 +497,20 @@ static void draw_clock(SDL_Surface *surface, const struct rect_t *rect, int t,
 }
 
 
+/* Draw information for a single deck, including:
+ * deck protection (not yet)
+ * rpm (not yet) */
+
+static void draw_deck_info(SDL_Surface *surface, const struct rect_t *rect)
+{
+    char deckp[21];
+
+    sprintf(deckp, "Deckinfo placeholder");
+
+    draw_font_rect(surface, rect, deckp, font, text_col, background_col);
+}
+
+
 /* Draw the visual display of the input audio to the timecoder (the
  * 'scope') */
 
@@ -795,15 +811,21 @@ static void draw_meters(SDL_Surface *surface, const struct rect_t *rect,
 static void draw_deck_top(SDL_Surface *surface, const struct rect_t *rect,
                           struct player_t *pl)
 {
-    struct rect_t clocks, left, right, spinner, scope;
+    struct rect_t clocks, left, mid, right, spinner, scope;
     
     split_left(rect, &clocks, &right, CLOCKS_WIDTH, SPACER);
 
     /* If there is no timecoder to display information on, or not enough 
-     * available space, just draw clocks which span the overall space */
+     * available space, just draw clocks and deck info */
 
-    if (!pl->timecode_control || right.w < 0) {
-        draw_deck_clocks(surface, rect, pl);
+    if (!pl->timecode_control) {
+        if (right.w < INFO_WIDTH)
+            /* just draw clocks, which span the overall space */
+            draw_deck_clocks(surface, rect, pl);
+        else {
+            draw_deck_clocks(surface, &clocks, pl);
+            draw_deck_info(surface, &right);
+        }
         return;
     }
 
@@ -815,11 +837,14 @@ static void draw_deck_top(SDL_Surface *surface, const struct rect_t *rect,
     split_bottom(&spinner, NULL, &spinner, SPINNER_SIZE, 0);
     draw_spinner(surface, &spinner, pl);
 
-    split_right(&left, &clocks, &scope, SCOPE_SIZE, SPACER);
-    if (clocks.w < 0)
+    split_right(&left, &mid, &scope, SCOPE_SIZE, SPACER);
+    if (mid.w < 0)
         return;
     split_bottom(&scope, NULL, &scope, SCOPE_SIZE, 0);
     draw_scope(surface, &scope, pl->timecoder);
+    if (mid.w < INFO_WIDTH)
+        return;
+    draw_deck_info(surface, &mid);
 }
 
 
