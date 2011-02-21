@@ -5,3 +5,5 @@ test-track
 *.o
 *.d
 .config
+tags
+*.swp
