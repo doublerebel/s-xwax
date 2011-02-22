@@ -498,7 +498,7 @@ static void draw_clock(SDL_Surface *surface, const struct rect_t *rect, int t,
 
 
 /* Draw information for a single deck, including:
- * deck protection (not yet)
+ * deck protection
  * rpm (not yet) */
 
 static void draw_deck_info(SDL_Surface *surface, const struct rect_t *rect,
