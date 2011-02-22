@@ -499,12 +499,15 @@ static void draw_clock(SDL_Surface *surface, const struct rect_t *rect, int t,
 
 /* Draw information for a single deck, including:
  * deck protection
- * rpm (not yet) */
+ * rpm */
 
 static void draw_deck_info(SDL_Surface *surface, const struct rect_t *rect,
                            const struct player_t *pl)
 {
-    char deckp[25];
+    char deckp[25], rpm[8];
+    struct rect_t rpm_rect;
+
+    /* Deck Protection */
 
     if (pl->deck_protection) {
         if (pl->playing && pl->timecode_control && pl->track->length)
@@ -515,6 +518,17 @@ static void draw_deck_info(SDL_Surface *surface, const struct rect_t *rect,
         sprintf(deckp, "Deck protection disabled");
 
     draw_font_rect(surface, rect, deckp, font, text_col, background_col);
+
+    /* RPM */
+
+    rpm_rect.x = rect->x;
+    rpm_rect.y = rect->y + FONT_SIZE * 1.5;
+    rpm_rect.w = rect->w;
+    rpm_rect.h = rect->h - FONT_SIZE * 1.5;
+
+    sprintf(rpm, "RPM: %s", pl->timecoder->speed == 1.0 ? "33" : "45");
+
+    draw_font_rect(surface, &rpm_rect, rpm, font, text_col, background_col);
 }
 
 
