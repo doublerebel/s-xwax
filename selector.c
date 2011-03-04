@@ -335,3 +335,43 @@ void selector_search_refine(struct selector_t *sel, char key)
 
     scroll_set_entries(&sel->records, sel->view_listing->entries);
 }
+
+
+/* Toggle the track status between "not played", "loaded" and "played" manually. */
+
+int selector_toggle_status(struct selector_t *sel)
+{
+    if (sel->records.selected < 0)
+        return -1;
+
+    struct record_t* selected = selector_current(sel);
+
+    if (selected == NULL)
+        return -1;
+
+    struct library_t *lib = sel->library;
+
+    switch (selected->status) {
+        case RECORD_PLAYED:
+            selected->status = RECORD_LOADED;
+            listing_add(&get_crate(lib, CRATE_LOADED)->listing, selected);
+            listing_remove(&get_crate(lib, CRATE_PLAYED)->listing, selected);
+            break;
+
+        case RECORD_NOT_PLAYED:
+            selected->status = RECORD_PLAYED;
+            listing_add(&get_crate(lib, CRATE_PLAYED)->listing, selected);
+            listing_remove(&get_crate(lib, CRATE_LOADED)->listing, selected);
+            break;
+
+        case RECORD_LOADED:
+            selected->status = RECORD_NOT_PLAYED;
+            listing_remove(&get_crate(lib, CRATE_LOADED)->listing, selected);
+            listing_remove(&get_crate(lib, CRATE_PLAYED)->listing, selected);
+            break;
+    }
+
+    crate_has_changed(sel);
+
+    return 0;
+}
