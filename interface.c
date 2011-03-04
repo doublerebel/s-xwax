@@ -1206,13 +1206,36 @@ static void draw_library(SDL_Surface *surface, const struct rect_t *rect,
 static void do_loading(struct interface_t *interface,
                        struct track_t *track, struct record_t *record)
 {
+    struct library_t *lib = interface->selector.library;
+    static struct track_t *old_tr = NULL;
+
     fprintf(stderr, "Loading '%s'.\n", record->pathname);
+
+    /* if we loaded a track already ...  */
+    if (old_tr != NULL) {
+        /* ... and the new track get's binded on a different deck, we mark the "old" track as played */
+        if ((old_tr != track) && (old_tr->record->status == RECORD_LOADED)) {
+            old_tr->record->status = RECORD_PLAYED;
+            listing_add(&get_crate(lib, CRATE_PLAYED)->listing, old_tr->record);
+            listing_remove(&get_crate(lib, CRATE_LOADED)->listing, old_tr->record);
+        }
+    }
 
     if (track_import(track, record->pathname) == -1)
         return;
 
+    /* save the track pointer for next call */
+    old_tr = track;
+
     track->artist = record->artist;
     track->title = record->title;
+    track->record = record;
+
+    /* now add the new track to "loaded tracks" */
+    if (record->status == RECORD_NOT_PLAYED) {
+        listing_add(&get_crate(lib, CRATE_LOADED)->listing, record);
+        record->status = RECORD_LOADED;
+    }
 
     (void)rig_awaken(interface->rig);
 }
