@@ -25,6 +25,10 @@
 
 #include "listing.h"
 
+#define CRATE_ALL "All records"
+#define CRATE_PLAYED "Played records"
+#define CRATE_LOADED "Loaded records"
+
 /* A single crate of records */
 
 struct crate_t {
