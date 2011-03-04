@@ -147,6 +147,7 @@ void track_init(struct track_t *tr, const char *importer)
     tr->importer = importer;
     tr->artist = NULL;
     tr->title = NULL;
+    tr->record = NULL;
 
     tr->blocks = 0;
     tr->importing = false;

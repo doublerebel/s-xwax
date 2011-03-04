@@ -22,8 +22,13 @@
 
 #include <stddef.h>
 
+#define RECORD_NOT_PLAYED 0
+#define RECORD_LOADED 1
+#define RECORD_PLAYED 2
+
 struct record_t {
     char *pathname, *artist, *title;
+    int status;
 };
 
 /* Listing points to records, but does not manage those pointers */
