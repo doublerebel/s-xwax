@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#
+# Usage: albumart [FOLDER]
+#
+# Recursively searches FOLDER and creates 240px square albumart
+# folder.jpg thumbnails from any .jpg found in each folder
+# to be read by s-xwax
+#
+# if folder.jpg exists, it will be renamed to folder.orig.jpg
+#
+# TODO:
+# * option to delete all folder.jpgs 
+# * option to rename all folder.orig.jpg back to folder.jpg
+# * option for a dry run
+#
+
+find $1 -name '*jpg' | while read i; do
+    img=$(basename "$i");dir=$(dirname "$i");
+	if [ -e "$dir/folder.jpg" ]; then
+		mv "$dir/folder.jpg" "$dir/folder.orig.jpg";
+	fi
+    convert -thumbnail 240 "$i" "$dir/folder.jpg";
+done

@@ -29,6 +29,7 @@
 #include <sys/types.h>
 
 #include <SDL.h>
+#include <SDL_image.h>
 #include <SDL_ttf.h>
 
 #include "interface.h"
@@ -75,6 +76,8 @@
 
 #define LIBRARY_MIN_WIDTH 64
 #define LIBRARY_MIN_HEIGHT 64
+
+#define CRATES_HEIGHT 70
 
 #define DEFAULT_WIDTH 960
 #define DEFAULT_HEIGHT 720
@@ -1157,6 +1160,27 @@ static void draw_records(SDL_Surface *surface, const struct rect_t *rect,
 }
 
 
+static void draw_albumart(SDL_Surface *surface, const struct rect_t *rect,
+                         const char *status)
+{
+	SDL_Surface *image;
+	int slashpos;
+	char albumart[300] = "";
+	FILE *file;
+
+	slashpos = strrchr(status, '/') - status;
+	strncpy(albumart, status, slashpos + 1);
+	strcat(albumart, "folder.jpg");
+
+	if (file = fopen(albumart, "r")) {
+		fclose(file);
+		image = IMG_Load(albumart);
+		fprintf(stderr, "Loaded albumart %s\n", albumart);
+		QuickBlit(image, surface, rect);
+	}
+
+}
+
 /* Display the music library, which consists of the query, and search
  * results */
 
@@ -1164,7 +1188,8 @@ static void draw_library(SDL_Surface *surface, const struct rect_t *rect,
                          struct selector_t *sel)
 {
     unsigned int lines;
-    struct rect_t rsearch, rlists, rcrates, rrecords;
+    struct rect_t rsearch, rlists, rrecords, rcrates, ralbumart;
+	const char *status;
 
     split_top(rect, &rsearch, &rlists, SEARCH_HEIGHT, SPACER);
     draw_search(surface, &rsearch, sel);
@@ -1173,12 +1198,22 @@ static void draw_library(SDL_Surface *surface, const struct rect_t *rect,
     selector_set_lines(sel, lines);
 
     split_left(&rlists, &rcrates, &rrecords, (rlists.w / 4), SPACER);
-    if (rcrates.w > LIBRARY_MIN_WIDTH) {
-        draw_records(surface, &rrecords, sel);
-        draw_crates(surface, &rcrates, sel);
-    } else {
+    if (rcrates.w < LIBRARY_MIN_WIDTH) {
         draw_records(surface, rect, sel);
+		return;
     }
+	
+	draw_records(surface, &rrecords, sel);
+	
+	/* Split crates into crates, album art */
+    split_top(&rcrates, &rcrates, &ralbumart, CRATES_HEIGHT, SPACER);
+	draw_crates(surface, &rcrates, sel);
+	
+	if (selector_current(sel) != NULL) {
+		status = selector_current(sel)->pathname;
+		draw_albumart(surface, &ralbumart, status);
+	}
+    
 }
 
 

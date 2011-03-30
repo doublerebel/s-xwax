@@ -24,7 +24,7 @@ CPPFLAGS += -MMD
 LDFLAGS += -O3
 
 SDL_CFLAGS = `sdl-config --cflags`
-SDL_LIBS = `sdl-config --libs` -lSDL_ttf
+SDL_LIBS = `sdl-config --libs` -lSDL_ttf -lSDL_image
 ALSA_LIBS = -lasound
 JACK_LIBS = -ljack
 
