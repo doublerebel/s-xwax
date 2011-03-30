@@ -39,7 +39,10 @@ struct player_t {
         sync_pitch, /* pitch required to sync to timecode signal */
         volume;
 
+
     bool target_valid;
+    bool playing; /* flag indicating whether a deck is running */
+    bool deck_protection; /* flag indicating whether deck protection is enabled */
 
     /* Timecode control */
 

@@ -71,7 +71,7 @@
 #define CURSOR_WIDTH 4
 
 #define PLAYER_HEIGHT 213
-#define OVERVIEW_HEIGHT 16
+#define OVERVIEW_HEIGHT 35
 
 #define LIBRARY_MIN_WIDTH 64
 #define LIBRARY_MIN_HEIGHT 64
@@ -88,6 +88,8 @@
 #define RESULTS_ARTIST_WIDTH 200
 
 #define CLOCKS_WIDTH 160
+
+#define INFO_WIDTH 100
 
 #define SPINNER_SIZE (CLOCK_FONT_SIZE * 2 - 6)
 #define SCOPE_SIZE (CLOCK_FONT_SIZE * 2 - 6)
@@ -145,9 +147,9 @@ static SDL_Color background_col = {0, 0, 0, 255},
     text_col = {224, 224, 224, 255},
     warn_col = {192, 64, 0, 255},
     ok_col = {32, 128, 3, 255},
-    elapsed_col = {0, 32, 255, 255},
+	elapsed_col = {0, 178, 162, 255},
     cursor_col = {192, 0, 0, 255},
-    selected_col = {0, 48, 64, 255},
+	selected_col = {0, 55, 6, 255},
     detail_col = {128, 128, 128, 255},
     needle_col = {255, 255, 255, 255};
 
@@ -495,6 +497,41 @@ static void draw_clock(SDL_Surface *surface, const struct rect_t *rect, int t,
 }
 
 
+/* Draw information for a single deck, including:
+ * deck protection
+ * rpm */
+
+static void draw_deck_info(SDL_Surface *surface, const struct rect_t *rect,
+                           const struct player_t *pl)
+{
+    char deckp[25], rpm[8];
+    struct rect_t rpm_rect;
+
+    /* Deck Protection */
+
+    if (pl->deck_protection) {
+        if (pl->playing && pl->timecode_control && pl->track->length)
+            sprintf(deckp, "Deck protected: Yes");
+        else
+            sprintf(deckp, "Deck protected: No");
+    } else
+        sprintf(deckp, "Deck protection disabled");
+
+    draw_font_rect(surface, rect, deckp, font, text_col, background_col);
+
+    /* RPM */
+
+    rpm_rect.x = rect->x;
+    rpm_rect.y = rect->y + FONT_SIZE * 1.5;
+    rpm_rect.w = rect->w;
+    rpm_rect.h = rect->h - FONT_SIZE * 1.5;
+
+    sprintf(rpm, "RPM: %s", pl->timecoder->speed == 1.0 ? "33" : "45");
+
+    draw_font_rect(surface, &rpm_rect, rpm, font, text_col, background_col);
+}
+
+
 /* Draw the visual display of the input audio to the timecoder (the
  * 'scope') */
 
@@ -795,15 +832,21 @@ static void draw_meters(SDL_Surface *surface, const struct rect_t *rect,
 static void draw_deck_top(SDL_Surface *surface, const struct rect_t *rect,
                           struct player_t *pl)
 {
-    struct rect_t clocks, left, right, spinner, scope;
+    struct rect_t clocks, left, mid, right, spinner, scope;
     
     split_left(rect, &clocks, &right, CLOCKS_WIDTH, SPACER);
 
     /* If there is no timecoder to display information on, or not enough 
-     * available space, just draw clocks which span the overall space */
+     * available space, just draw clocks and deck info */
 
-    if (!pl->timecode_control || right.w < 0) {
-        draw_deck_clocks(surface, rect, pl);
+    if (!pl->timecode_control) {
+        if (right.w < INFO_WIDTH)
+            /* just draw clocks, which span the overall space */
+            draw_deck_clocks(surface, rect, pl);
+        else {
+            draw_deck_clocks(surface, &clocks, pl);
+            draw_deck_info(surface, &right, pl);
+        }
         return;
     }
 
@@ -815,11 +858,14 @@ static void draw_deck_top(SDL_Surface *surface, const struct rect_t *rect,
     split_bottom(&spinner, NULL, &spinner, SPINNER_SIZE, 0);
     draw_spinner(surface, &spinner, pl);
 
-    split_right(&left, &clocks, &scope, SCOPE_SIZE, SPACER);
-    if (clocks.w < 0)
+    split_right(&left, &mid, &scope, SCOPE_SIZE, SPACER);
+    if (mid.w < 0)
         return;
     split_bottom(&scope, NULL, &scope, SCOPE_SIZE, 0);
     draw_scope(surface, &scope, pl->timecoder);
+    if (mid.w < INFO_WIDTH)
+        return;
+    draw_deck_info(surface, &mid, pl);
 }
 
 
@@ -839,12 +885,13 @@ static void draw_deck_status(SDL_Surface *surface,
     else
         sprintf(buf, "timecode:        ");
     
-    sprintf(buf + 17, "pitch:%+0.2f (sync %0.2f %+.5fs = %+0.2f)  %s",
+    sprintf(buf + 17, "pitch:%+0.2f (sync %0.2f %+.5fs = %+0.2f)  %s status: %s",
             pl->pitch,
             pl->sync_pitch,
             pl->last_difference,
             pl->pitch * pl->sync_pitch,
-            pl->recalibrate ? "RCAL  " : "");
+            pl->recalibrate ? "RCAL  " : "",
+            pl->playing ? "PLAYING" : "STOPPED");
     
     draw_font_rect(surface, rect, buf, detail_font,
                    detail_col, background_col);
@@ -1254,8 +1301,15 @@ static bool handle_key(struct interface_t *in, struct selector_t *sel,
 
             case FUNC_LOAD:
                 re = selector_current(sel);
-                if (re != NULL)
+                if (re != NULL) {
+                    if (pl->deck_protection) {
+                        if (pl->playing && pl->timecode_control && pl->track->length) {
+                            fprintf(stderr, "Deck %d is locked!\n", deck);
+                            break;
+                        }
+                    }
                     do_loading(in, pl->track, re);
+                }
                 break;
 
             case FUNC_RECUE:
