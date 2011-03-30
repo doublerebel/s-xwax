@@ -17,6 +17,10 @@ Built from [the latest xwax beta](http://www.xwax.co.uk/devel/xwax.git)
 
   * XSPF and PLS playlist scanner by Charles Phillips
 
+[Screenshot of s-xwax 0.1a](http://www.doublerebel.com/images/s-xwax0.1a.png)
+
+*Video tearing due to lack of vsync in SDL 1.2, upgrading to 1.3 is in the TODO*
+
 New album art feature reads **folder.jpg** from the folder containing
 the audio file.  The script **albumart** can be used to recursively
 create the **folder.jpg** files (requires **Imagemagick** to be installed).
@@ -40,9 +44,7 @@ WARNING: Consider this repository to be unstable and volatile.
 S-xwax has not been fully tested under performance conditions.
 Large waveforms have a significant negative impact on performance.
 (I will be rewriting the UI functions to use OpenGL acceleration.)
-I will also be trashing this branch soon so that I can properly
-make commits from the original xwax branch. Oh well, the download is
-small.
+This branch is subject to change.
 
 **Original README:**
 
