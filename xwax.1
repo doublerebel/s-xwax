@@ -1,7 +1,7 @@
 .TH XWAX "1"
 
 .SH NAME
-xwax \- Digital vinyl on Linux
+xwax \- Digital vinyl on Linux (s-xwax fork)
 
 .SH SYNOPSIS
 .B xwax
@@ -15,6 +15,9 @@ turntablists to playback digital audio files (MP3, Ogg Vorbis, FLAC,
 AAC and more), controlled using a normal pair of turntables via
 timecoded vinyls.
 
+The s-xwax (Super-Xwax) fork changes to vertical stacked waveforms
+and adds popular user mods like deck protection and played tracks list.
+
 .SH OPTIONS
 
 .P
@@ -27,11 +30,13 @@ below.
 .TP
 .B \-l \fIpath\fR
 Scan the music library at the given path.
+Also scans .xspf and .pls playlists (s-xwax only).
 
 .TP
 .B \-p \fIpath\fR
-Load a playlist at the given path. This operation is identical to
+Load a 'playlist' at the given path. This operation is identical to
 scanning a music library except that the order is retained.
+Also scans .xspf and .pls playlists (s-xwax only).
 
 .TP
 .B \-t \fIname\fR
@@ -227,3 +232,4 @@ http://www.xwax.co.uk/
 
 .SH AUTHOR
 Mark Hills <mark@pogo.org.uk>
+Charles Phillips <charles@doublerebel.com> (s-xwax fork)

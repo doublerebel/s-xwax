@@ -20,7 +20,9 @@
 #ifndef XWAX_H
 #define XWAX_H
 
-#define BANNER "xwax 0.9-beta4 (C) Copyright 2011 Mark Hills <mark@pogo.org.uk>"
+/* #define BANNER "xwax 0.9-beta4 (C) Copyright 2011 Mark Hills <mark@pogo.org.uk>" */
+/* #define BANNER "xwaxed 0.1-beta1 (C) Copyright 2011 Sighter <sighter@resource-dnb.de>, JvA <achterin@hush.com>" */
+#define BANNER "s-xwax 0.1a (C) Copyright 2011 Charles Phillips charles@doublerebel.com"
 
 #define NOTICE \
   "This software is supplied WITHOUT ANY WARRANTY; without even the implied\n"\
