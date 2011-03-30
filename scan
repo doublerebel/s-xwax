@@ -11,22 +11,113 @@
 # unexpected things will happen.
 
 PATHNAME="$1"
+EXT=${PATHNAME##*.}
 
-if [ -d "$PATHNAME" ]; then
-	find -L "$PATHNAME" -type f
-else
-	cat "$PATHNAME"
-fi | sed -n '
+if [ $EXT = "xspf" ]; then
+	xsltproc playlist.xsl $PATHNAME | awk '
+BEGIN { RS="" };
 {
-# /[<num>[.]] <artist> - <title>.ext
-s:/\([0-9]\+.\? \+\)\?\([^/]*\) \+- \+\([^/]*\)\.[A-Z0-9]*$:\0\t\2\t\3:pi
+gsub(/file:\/\//, "");
+gsub(/%20/, " ");
+gsub(/%5B/, "[");
+gsub(/%5D/, "]");
+gsub(/%3B/, ";");
+print
+}
+' | sed -n '
+{
+#title and artist parsed
+s:.\+\t.\+\t.\+$:\0:p
 t
 
-# /<artist> - <album>[/(Disc|Side) <name>]/[<ABnum>[.]] <title>.ext
-s:/\([^/]*\) \+- \+\([^/]*\)\(/\(disc\|side\) [0-9A-Z][^/]*\)\?/\([AB0-9]\{1,3\}.\? \+\)\?\([^/]*\)\.[A-Z0-9]*$:\0\t\1\t\6:pi
+#only title or artist, attempt to parse
+#s:^\(.\+\)\t\([0-9]\+.\?[\s_]\+\)\?\(.*\)-\(.*\)\(\.[A-Z0-9]*\)\?$:\1\t\3\t\4:pi
+s:^\(.\+\)\t\([0-9]\+.\?[\s_]\+\)\?\(.*\)-\(.*\)$:\1\t\3\t\4:pi
+t
+
+#title seems to be a filename, separate name and extension
+s:^\(.\+\)\t\([0-9]\+.\?[\s_]\+\)\?\(.*\)\.\([A-Z0-9]*\)$:\1\t\3\t\4:pi
+t
+
+#title unknown
+s:^\(.\+\)\t\(.\+\)$:\1\t\t\2:p
+t
+
+# /[<ABnum>[.]] <artist> - <title>.ext
+# for some reason this regex does not parse files with multiple dashes
+s:/\([AB0-9]\+.\?[\s_]\+\)\?\([^/]*\)[\s_]\+-[\s_]\+\([^/]*\)\.[A-Z0-9]*$:\0\t\2\t\3:pi
+t
+
+# /<artist> - <album>[/(Disc|Side) <n>.*]/[<ABnum>[.]] <title>.ext
+s:/\([^/]*\)[\s_]\+-[\s_]\+\([^/]*\)\(/\(disc|side\)[\s_][A-Z0-9][^/]*\)\?/\([AB0-9]\+.\?[\s_]\+\)\?\([^/]*\)\.[A-Z0-9]*$:\0\t\1\t\5:pi
 t
 
 # /[<ABnum>[.]] <name>.ext
-s:/\([AB0-9]\{1,3\}.\? \+\)\?\([^/]*\)\.[A-Z0-9]*$:\0\t\t\2:pi
+s:/\([AB0-9]\+.\?[\s_]\+\)\?\([^/]*\)\.[A-Z0-9]*$:\0\t\t\2:pi
 }
 '
+else
+	if [ $EXT = "pls" ]; then
+		#skip the first two lines	
+		#treat the entire file as a single record
+		#remove all unneeded .PLS lines
+		#put Title on the same line as Filename with tab separation
+		#if filename is relative, add path (won't always work)
+		#strip File and file://
+		#replace special characters
+		tail -n +3 "$PATHNAME" | awk '
+BEGIN { RS="" };
+{
+gsub(/\n(Length|NumberOfEntries|Version).*\n/, "");
+gsub(/\nTitle/, "\t");
+gsub(/File[0-9]+=[^\/(file)]/, "'$PWD'");
+gsub(/File[0-9]+=file:\/\//, "");
+gsub(/%20/, " ");
+gsub(/%5B/, "[");
+gsub(/%5D/, "]");
+gsub(/%3B/, ";");
+print
+}
+' | sed -n '
+{
+# <filename>\t[0-1000]=<artist> - <title>
+s:\(.*\)\t[0-9]\+=\(.*\)[\s_]\+-[\s_]\+\(.*\)$:\1\t\2\t\3:pi
+t
+
+# <ABnum>[.]] <artist> - <title>.ext
+s:/\([AB0-9]\+.\?[\s_]\+\)\?\([^/]*\)[_ ]\+-[_ ]\+\([^/]*\)\.[A-Z0-9]*$:\0\t\2\t\3:pi
+t
+
+# /<artist> - <album>[/(Disc|Side) <n>.*]/[<ABnum>[.]] <title>.ext
+s:/\([^/]*\)[\s_]\+-[\s_]\+\([^/]*\)\(/\(disc|side\)[\s_][A-Z0-9][^/]*\)\?/\([AB0-9]\+.\?[\s_]\+\)\?\([^/]*\)\.[A-Z0-9]*$:\0\t\1\t\5:pi
+t
+
+# /[<ABnum>[.]] <name>.ext
+s:/\([AB0-9]\+.\?[\s_]\+\)\?\([^/]*\)\.[A-Z0-9]*$:\0\t\t\2:pi
+}
+'
+	else
+		if [ -d "$PATHNAME" ]; then
+			find -L "$PATHNAME" -type f
+		else
+			cat "$PATHNAME"
+		fi | sed -n '
+{
+# /[<ABnum>[.]] <artist> - <title>.ext
+s:/\([AB0-9]\+.\? \+\)\?\([^/]*\) \+- \+\([^/]*\)\.[A-Z0-9]*$:\0\t\2\t\3:pi
+t
+
+# /[<ABnum>[.]] <artist>-<title>.ext
+s:/\([AB0-9]\+.\?[\s_]\+\)\?\([^/]*\)-\([^/]*\)\.[A-Z0-9]*$:\0\t\2\t\3:pi
+t
+
+# /<artist> - <album>[/(Disc|Side) <n>.*]/[<ABnum>[.]] <title>.ext
+s:/\([^/]*\) \+- \+\([^/]*\)\(/\(disc|side\) [A-Z0-9][^/]*\)\?/\([AB0-9]\+.\? \+\)\?\([^/]*\)\.[A-Z0-9]*$:\0\t\1\t\5:pi
+t
+
+# /[<ABnum>[.]] <name>.ext
+s:/\([AB0-9]\+.\?[\s_]\+\)\?\([^/]*\)\.[A-Z0-9]*$:\0\t\t\2:pi
+}
+'
+	fi
+fi

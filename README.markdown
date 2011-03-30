@@ -19,7 +19,9 @@ create the **folder.jpg** files (requires **Imagemagick** to be installed).
 New **XSPF**/**PLS** playlist scanner will read playlists and the track
 metadata encoded in the playlists.  Playlists can be created by
 programs such as **Audacious**, **Rhythmbox**, and many more. Make sure
-that the playlist editor reads track metadata on import.
+that the playlist editor reads track metadata on import. Note: This feature
+uses the -l command line option to load playlists, completely separate from
+Mark's new -p option.
 
 To increase performance, reduce the size of the waveform display
 by reducing the PLAYER_HEIGHT constant in **interface.c** .

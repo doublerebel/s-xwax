@@ -1,0 +1,30 @@
+scan:
+Consider sides C, D in addition to the current A, AA, B
+check [playlist] header in .pls files
+Test against master scan script to ensure 100% backwards compatibility
+Finish adding varible-length space/underscore support
+Fix issue with improper parsing of filenames with multiple dashes
+
+Makefile:
+Add config option to build with album art support
+Test for Imagemagick dependency
+Add config option to build with playlist support
+Test for xsltproc dependency
+Install playlist.xsl into xwax_scan directory
+Install albumart script into xwax_scan directory (?)
+
+interface.c:
+Show blank square if album art is not found
+Many calls to this:
+    pixels = surface->pixels;
+    bytes_per_pixel = surface->format->BytesPerPixel;
+    pitch = surface->pitch;
+any improvement from not calling surface->format and surface->pitch
+	why not just call it in the initialization fn?
+Upgrade to SDL 1.3
+	Render library as a software surface (initially)
+	Use Accelerated 2D API for players/info
+	Check issue with TTF rendering and SDL 1.3
+	Add vsync
+
+Revive xwaxmac port
