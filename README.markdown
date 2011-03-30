@@ -1,5 +1,10 @@
 **s-xwax: *super-xwax* -- an experimental fork of xwax Digital Vinyl System**
 
+The goal of s-xwax is to widen the interest and use of xwax by adding
+attractive and popular modern DVS features, including the most popular xwax
+community mods and flashy UI updates, showing that a F/OSS DVS can be
+feature-complete, stable, and efficient enough for regular pro DJ use.
+
 Built from [the latest xwax beta](http://www.xwax.co.uk/devel/xwax.git)
 
   * Original source by Mark Hills

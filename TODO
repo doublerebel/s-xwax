@@ -14,6 +14,7 @@ Install playlist.xsl into xwax_scan directory
 Install albumart script into xwax_scan directory (?)
 
 interface.c:
+Add played_tracks patch
 Show blank square if album art is not found
 Many calls to this:
     pixels = surface->pixels;
