@@ -669,7 +669,7 @@ static void draw_overview(SDL_Surface *surface, const struct rect_t *rect,
     int x, y, w, h, r, c, sp, fade, bytes_per_pixel, pitch, height,
         current_position;
     Uint8 *pixels, *p;
-    SDL_Color col;
+    SDL_Color col, fadecol;
 
     x = rect->x;
     y = rect->y;
@@ -729,10 +729,13 @@ static void draw_overview(SDL_Surface *surface, const struct rect_t *rect,
         p = pixels + y * pitch + (x + c) * bytes_per_pixel;
 
         r = h;
+        fadecol.b = col.b >> fade;
+		fadecol.g = col.g >> fade;
+		fadecol.r = col.r >> fade;
         while (r > height) {
-            p[0] = col.b >> fade;
-            p[1] = col.g >> fade;
-            p[2] = col.r >> fade;
+            p[0] = fadecol.b;
+            p[1] = fadecol.g;
+            p[2] = fadecol.r;
             p += pitch;
             r--;
         }
@@ -755,7 +758,7 @@ static void draw_closeup(SDL_Surface *surface, const struct rect_t *rect,
 {
     int x, y, w, h, r, c, sp, fade, bytes_per_pixel, pitch, height;
     Uint8 *pixels, *p;
-    SDL_Color col;
+    SDL_Color col, fadecol;
 
     x = rect->x;
     y = rect->y;
@@ -794,10 +797,13 @@ static void draw_closeup(SDL_Surface *surface, const struct rect_t *rect,
         p = pixels + y * pitch + (x + c) * bytes_per_pixel;
 
         r = h;
+        fadecol.b = col.b >> fade;
+		fadecol.g = col.g >> fade;
+		fadecol.r = col.r >> fade;
         while (r > height) {
-            p[0] = col.b >> fade;
-            p[1] = col.g >> fade;
-            p[2] = col.r >> fade;
+            p[0] = fadecol.b;
+            p[1] = fadecol.g;
+            p[2] = fadecol.r;
             p += pitch;
             r--;
         }
