@@ -44,6 +44,7 @@
 /* Screen refresh time in milliseconds */
 
 #define REFRESH 10
+/* 16.67_ is 60fps/Hz */
 
 
 /* Font definitions */
@@ -71,8 +72,8 @@
 
 #define CURSOR_WIDTH 4
 
-#define PLAYER_HEIGHT 213
-#define OVERVIEW_HEIGHT 35
+#define PLAYER_HEIGHT 360
+#define OVERVIEW_HEIGHT 26
 
 #define LIBRARY_MIN_WIDTH 64
 #define LIBRARY_MIN_HEIGHT 64
@@ -232,6 +233,26 @@ static void split_right(const struct rect_t *source, struct rect_t *left,
     split_left(source, left, right, source->w - v - space, space);
 }
 
+static SDL_Surface* set_size(int w, int h, struct rect_t *rect)
+{
+    SDL_Surface *surface;
+
+    surface = SDL_SetVideoMode(w, h, 32,
+							   SDL_SWSURFACE | SDL_RESIZABLE);
+    if (surface == NULL) {
+        fprintf(stderr, "%s\n", SDL_GetError());
+        return NULL;
+    }
+    
+    rect->x = BORDER;
+    rect->y = BORDER;
+    rect->w = w - 2 * BORDER;
+    rect->h = h - 2 * BORDER;
+
+    fprintf(stderr, "New interface size is %dx%d.\n", w, h);
+    
+    return surface;
+}
 
 static void time_to_clock(char *buf, char *deci, int t)
 {
@@ -824,8 +845,11 @@ static void draw_meters(SDL_Surface *surface, const struct rect_t *rect,
                         struct track_t *tr, int position, int scale)
 {
     struct rect_t overview, closeup;
+	int closeup_height;
+	
+	closeup_height = rect->h - OVERVIEW_HEIGHT;
 
-    split_top(rect, &overview, &closeup, OVERVIEW_HEIGHT, SPACER);
+    split_top(rect, &closeup, &overview, closeup_height, SPACER);
 
     if (closeup.h > OVERVIEW_HEIGHT)
         draw_overview(surface, &overview, tr, position);
@@ -834,49 +858,6 @@ static void draw_meters(SDL_Surface *surface, const struct rect_t *rect,
 
     draw_closeup(surface, &closeup, tr, position, scale);
 }
-
-
-/* Draw the current playback status -- clocks, spinner and scope */
-
-static void draw_deck_top(SDL_Surface *surface, const struct rect_t *rect,
-                          struct player_t *pl)
-{
-    struct rect_t clocks, left, mid, right, spinner, scope;
-    
-    split_left(rect, &clocks, &right, CLOCKS_WIDTH, SPACER);
-
-    /* If there is no timecoder to display information on, or not enough 
-     * available space, just draw clocks and deck info */
-
-    if (!pl->timecode_control) {
-        if (right.w < INFO_WIDTH)
-            /* just draw clocks, which span the overall space */
-            draw_deck_clocks(surface, rect, pl);
-        else {
-            draw_deck_clocks(surface, &clocks, pl);
-            draw_deck_info(surface, &right, pl);
-        }
-        return;
-    }
-
-    draw_deck_clocks(surface, &clocks, pl);    
-
-    split_right(&right, &left, &spinner, SPINNER_SIZE, SPACER);
-    if (left.w < 0)
-        return;
-    split_bottom(&spinner, NULL, &spinner, SPINNER_SIZE, 0);
-    draw_spinner(surface, &spinner, pl);
-
-    split_right(&left, &mid, &scope, SCOPE_SIZE, SPACER);
-    if (mid.w < 0)
-        return;
-    split_bottom(&scope, NULL, &scope, SCOPE_SIZE, 0);
-    draw_scope(surface, &scope, pl->timecoder);
-    if (mid.w < INFO_WIDTH)
-        return;
-    draw_deck_info(surface, &mid, pl);
-}
-
 
 /* Draw the textual description of playback status, which includes
  * information on the timecode */
@@ -909,56 +890,116 @@ static void draw_deck_status(SDL_Surface *surface,
 
 /* Draw a single deck */
 
-static void draw_deck(SDL_Surface *surface, const struct rect_t *rect,
-                      struct player_t *pl, int meter_scale)
+/* CP: change to:
+  
+  + Draw closeup wave full width of screen
+  + Draw overview wave below, smaller
+  * If deck 1 or 3, draw left spinner
+  * If deck 2, draw right spinner
+  * Then overlay graph on spinner
+  + Draw clock directly right of left spinner size
+  + Draw title text, DP, RPM to the right of clock
+  * Draw detailed status info below all decks
+
+*/
+
+
+static void QuickBlit(SDL_Surface *srcSurface, SDL_Surface *dstSurface,
+					  const struct rect_t *rect)
+{
+	SDL_Rect src, dst;
+
+    src.x = 0;
+    src.y = 0;
+	src.w = rect->w;
+	src.h = rect->h;
+
+	dst.x = rect->x;
+	dst.y = rect->y;
+	
+	SDL_BlitSurface(srcSurface, &src, dstSurface, &dst);
+}
+
+
+static void draw_deck(SDL_Surface *surface, SDL_Surface *info,
+					  const struct rect_t *rect,
+					  struct player_t *pl, int meter_scale)
 {
     int position;
-    struct rect_t track, top, meters, status, rest, lower;
-
-    position = (pl->position - pl->offset) * pl->track->rate;
-
-    split_top(rect, &track, &rest, FONT_SPACE * 2, 0);
-    if (rest.h < 160)
-        rest = *rect;
-    else
-        draw_track_summary(surface, &track, pl->track);
-
-    split_top(&rest, &top, &lower, CLOCK_FONT_SIZE * 2, SPACER);
-    if (lower.h < 64)
-        lower = rest;
-    else
-        draw_deck_top(surface, &top, pl);
-    
-    split_bottom(&lower, &meters, &status, FONT_SPACE, SPACER); 
+    struct rect_t meters, spinner, scope, clocks, track, deck_info, status;
+	
+	/*
+	split_bottom(&lower, &meters, &status, FONT_SPACE, SPACER); 
     if (meters.h < 64)
         meters = lower;
     else
         draw_deck_status(surface, &status, pl);
+	*/
+	
+	meters = *rect;
+	position = (pl->position - pl->offset) * pl->track->rate;
 
     draw_meters(surface, &meters, pl->track, position, meter_scale);
-}
 
+    /* Todo: implement no-timecode display
+	 * If there is no timecoder to display information on, or not enough 
+     * available space, just draw clocks and deck info 
+	if (!pl->timecode_control) {
+        if (right.w < INFO_WIDTH)
+            // just draw clocks, which span the overall space 
+            draw_deck_clocks(surface, rect, pl);
+        else {
+            draw_deck_clocks(surface, &clocks, pl);
+            draw_deck_info(surface, &right, pl);
+        }
+        return;
+    }
+    
+    draw_deck_clocks(surface, &clocks, pl);
+	*/
+	
+	/* Start with spinner on the left */
+	split_left(rect, &spinner, &clocks, SPINNER_SIZE, SPACER);
+	/* Draw spinner */
+	draw_spinner(info, &spinner, pl);
+	
+	/* Place scope below until I can figure out how to blit
+	 * it on top of the spinner */
+	split_top(&spinner, NULL, &scope, SPINNER_SIZE, 0);
+	/* Draw scope */
+	draw_scope(surface, &scope, pl->timecoder);
+    
+	/* Draw clocks */
+	draw_deck_clocks(info, &clocks, pl);
+	
+	split_left(&clocks, NULL, &track, CLOCKS_WIDTH, SPACER);
+	draw_track_summary(info, &track, pl->track);
+	
+	/* Draw deck info*/
+	split_top(&track, NULL, &deck_info, FONT_SPACE * 2, 0);
+	draw_deck_info(info, &deck_info, pl);
+
+}
 
 /* Draw all the decks in the system */
 
-static void draw_decks(SDL_Surface *surface, const struct rect_t *rect,
+static void draw_decks(SDL_Surface *surface, SDL_Surface *info, const struct rect_t *rect,
                        int ndecks, struct player_t **player,
                        int meter_scale)
 {
-    int d, deck_width;
+    int d, deck_height;
     struct rect_t single;
 
-    deck_width = (rect->w - BORDER * (ndecks - 1)) / ndecks;
+    deck_height = (rect->h - BORDER * (ndecks - 1)) / ndecks;
 
     single = *rect;
-    single.w = deck_width;
+    single.h = deck_height;
 
     for (d = 0; d < ndecks; d++) {
-        single.x = rect->x + (deck_width + BORDER) * d;
-        draw_deck(surface, &single, player[d], meter_scale);
+        single.y = rect->y + (deck_height + BORDER) * d;
+        draw_deck(surface, info, &single, player[d], meter_scale);
     }
 }
-
 
 /* Draw the status bar */
 
@@ -1367,28 +1408,6 @@ static bool handle_key(struct interface_t *in, struct selector_t *sel,
     return false;
 }
 
-
-static SDL_Surface* set_size(int w, int h, struct rect_t *rect)
-{
-    SDL_Surface *surface;
-
-    surface = SDL_SetVideoMode(w, h, 32, SDL_RESIZABLE);
-    if (surface == NULL) {
-        fprintf(stderr, "%s\n", SDL_GetError());
-        return NULL;
-    }
-    
-    rect->x = BORDER;
-    rect->y = BORDER;
-    rect->w = w - 2 * BORDER;
-    rect->h = h - 2 * BORDER;
-
-    fprintf(stderr, "New interface size is %dx%d.\n", w, h);
-    
-    return surface;
-}
-
-
 static Uint32 ticker(Uint32 interval, void *p)
 {
     SDL_Event event;
@@ -1416,6 +1435,9 @@ static int interface_main(struct interface_t *in)
     SDL_Event event;
     SDL_TimerID timer;
     SDL_Surface *surface;
+	
+	SDL_PixelFormat fmt;
+    SDL_Surface *info;
 
     struct rect_t rworkspace, rplayers, rlibrary, rstatus, rtmp;
 
@@ -1498,6 +1520,20 @@ static int interface_main(struct interface_t *in)
 
         if (rplayers.h < 0 || rplayers.w < 0)
             decks_update = UPDATE_NONE;
+		
+		/* Now that we know the player height, setup the info overlay */		
+		/* Get the PixelFormat of existing surface */
+		fmt = *(surface->format);
+		/* Create new SDL surface of track info(s) to blit onto the deck(s) */
+		info = SDL_CreateRGBSurface(SDL_SWSURFACE, rplayers.w, rplayers.h,
+									fmt.BitsPerPixel,
+									fmt.Rmask, fmt.Gmask, fmt.Bmask, fmt.Amask);
+		if (info == NULL) {
+			fprintf(stderr, "%s\n", SDL_GetError());
+		}
+		/* Set info surface transparency color key to background color */
+		SDL_SetColorKey(info, SDL_SRCCOLORKEY | SDL_RLEACCEL, SDL_MapRGB(info->format,background_col.r,background_col.g,background_col.b));
+
 
         /* If there's been a change to the library search results,
          * check them over and display them. */
@@ -1532,12 +1568,15 @@ static int interface_main(struct interface_t *in)
 
         if (decks_update >= UPDATE_REDRAW) {
             LOCK(surface);
-            draw_decks(surface, &rplayers, in->players, in->player,
+            draw_decks(surface, info, &rplayers, in->players, in->player,
                        meter_scale);
+			QuickBlit(info, surface, &rplayers);
             UNLOCK(surface);
             UPDATE(surface, &rplayers);
             decks_update = UPDATE_NONE;
         }
+		
+		SDL_FreeSurface(info);
 
     } /* main loop */
 
