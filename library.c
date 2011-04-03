@@ -31,8 +31,6 @@
 
 #include "library.h"
 
-#define CRATE_ALL "All records"
-
 /*
  * Initialise a crate
  *
@@ -201,6 +199,12 @@ int library_init(struct library_t *li)
         return -1;
     }
 
+    if (use_crate(li, CRATE_PLAYED, true) == NULL)
+        return -1;
+
+    if (use_crate(li, CRATE_LOADED, true) == NULL)
+        return -1;
+
     return 0;
 }
 
@@ -366,6 +370,7 @@ int library_import(struct library_t *li, bool sort,
         }
 
         d->pathname = pathname;
+        d->status = RECORD_NOT_PLAYED;
 
         if (get_field(fp, '\t', &d->artist) != 0) {
             fprintf(stderr, "EOF when reading artist for '%s'.\n", d->pathname);

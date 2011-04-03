@@ -111,6 +111,39 @@ int listing_add(struct listing_t *ls, struct record_t *lr)
 }
 
 /*
+ * Remove a record from the listing
+ *
+ * Return: 0 on success or -1 if record was not found in given crate
+ */
+
+int listing_remove(struct listing_t *ls, struct record_t *lr)
+{
+    int n, pos = -1;
+
+    /* search and remove given record; we don't care about possible double entries.
+     * so if we found the entry skip the rest */
+    for (n = 0; n < ls->entries; n++) {
+        if (ls->record[n] == lr) {
+            ls->record[n] = NULL;
+            pos = n;
+            break;
+        }
+    }
+
+    /* record not in crate! */
+    if (pos == -1)
+        return -1;
+
+    ls->entries--;
+
+    /* resort list */
+    for (n = pos; n < ls->entries; n++)
+        ls->record[n] = ls->record[n + 1];
+
+    return 0;
+}
+
+/*
  * Standard comparison function between two records
  */
 

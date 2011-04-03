@@ -148,7 +148,9 @@ static const char *font_dirs[] = {
 static TTF_Font *clock_font, *deci_font, *detail_font, *font, *em_font;
 
 static SDL_Color background_col = {0, 0, 0, 255},
+    playedbg_col = {32, 32, 32, 255},
     text_col = {224, 224, 224, 255},
+    playedtext_col = {124, 124, 124, 255},
     warn_col = {192, 64, 0, 255},
     ok_col = {32, 128, 3, 255},
 	elapsed_col = {0, 178, 162, 255},
@@ -1150,7 +1152,8 @@ static void draw_records(SDL_Surface *surface, const struct rect_t *rect,
     struct rect_t rs;
     struct record_t *re;
     SDL_Rect box;
-    SDL_Color col;
+    SDL_Color col_bg = background_col;
+    SDL_Color col_text = text_col;
     
     x = rect->x;
     y = rect->y;
@@ -1169,25 +1172,40 @@ static void draw_records(SDL_Surface *surface, const struct rect_t *rect,
             break;
 
         r = y + n * FONT_SPACE;
+
+        switch (re->status) {
+            case RECORD_NOT_PLAYED:
+                col_text = text_col;
+                col_bg = background_col;
+                break;
+
+            case RECORD_LOADED:
+                col_text = playedtext_col;
+                col_bg = background_col;
+                break;
+
+            case RECORD_PLAYED:
+                col_text = playedtext_col;
+                col_bg = playedbg_col;
+                break;
+        }
     
         if (n + sel->records.offset == sel->records.selected)
-            col = selected_col;
-        else
-            col = background_col;
+            col_bg = selected_col;
 
         draw_font(surface, x, r, RESULTS_ARTIST_WIDTH, FONT_SPACE,
-                  re->artist, font, text_col, col);
+                  re->artist, font, col_text, col_bg);
 
         box.x = x + RESULTS_ARTIST_WIDTH;
         box.y = r;
         box.w = SPACER;
         box.h = FONT_SPACE;
 
-        SDL_FillRect(surface, &box, palette(surface, &col));
+        SDL_FillRect(surface, &box, palette(surface, &col_bg));
             
         draw_font(surface, x + RESULTS_ARTIST_WIDTH + SPACER, r,
                   w - RESULTS_ARTIST_WIDTH - SPACER, FONT_SPACE,
-                  re->title, em_font, text_col, col);
+                  re->title, em_font, col_text, col_bg);
     }
 
     /* Blank any remaining space */
@@ -1270,13 +1288,36 @@ static void draw_library(SDL_Surface *surface, const struct rect_t *rect,
 static void do_loading(struct interface_t *interface,
                        struct track_t *track, struct record_t *record)
 {
+    struct library_t *lib = interface->selector.library;
+    static struct track_t *old_tr = NULL;
+
     fprintf(stderr, "Loading '%s'.\n", record->pathname);
+
+    /* if we loaded a track already ...  */
+    if (old_tr != NULL) {
+        /* ... and the new track get's binded on a different deck, we mark the "old" track as played */
+        if ((old_tr != track) && (old_tr->record->status == RECORD_LOADED)) {
+            old_tr->record->status = RECORD_PLAYED;
+            listing_add(&get_crate(lib, CRATE_PLAYED)->listing, old_tr->record);
+            listing_remove(&get_crate(lib, CRATE_LOADED)->listing, old_tr->record);
+        }
+    }
 
     if (track_import(track, record->pathname) == -1)
         return;
 
+    /* save the track pointer for next call */
+    old_tr = track;
+
     track->artist = record->artist;
     track->title = record->title;
+    track->record = record;
+
+    /* now add the new track to "loaded tracks" */
+    if (record->status == RECORD_NOT_PLAYED) {
+        listing_add(&get_crate(lib, CRATE_LOADED)->listing, record);
+        record->status = RECORD_LOADED;
+    }
 
     (void)rig_awaken(interface->rig);
 }
@@ -1345,6 +1386,10 @@ static bool handle_key(struct interface_t *in, struct selector_t *sel,
 
     } else if (key == SDLK_TAB) {
         selector_toggle(sel);
+        return true;
+        
+    } else if (key == SDLK_DELETE) {
+        selector_toggle_status(sel);
         return true;
 
     } else if ((key == SDLK_EQUALS) || (key == SDLK_PLUS)) {

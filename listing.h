@@ -22,8 +22,13 @@
 
 #include <stddef.h>
 
+#define RECORD_NOT_PLAYED 0
+#define RECORD_LOADED 1
+#define RECORD_PLAYED 2
+
 struct record_t {
     char *pathname, *artist, *title;
+    int status;
 };
 
 /* Listing points to records, but does not manage those pointers */
@@ -37,6 +42,7 @@ void listing_init(struct listing_t *ls);
 void listing_clear(struct listing_t *ls);
 void listing_blank(struct listing_t *ls);
 int listing_add(struct listing_t *li, struct record_t *lr);
+int listing_remove(struct listing_t *ls, struct record_t *lr);
 int listing_copy(const struct listing_t *src, struct listing_t *dest);
 int listing_match(struct listing_t *src, struct listing_t *dest,
 		  const char *match);

@@ -70,4 +70,6 @@ void selector_toggle(struct selector_t *sel);
 void selector_search_expand(struct selector_t *sel);
 void selector_search_refine(struct selector_t *sel, char key);
 
+int selector_toggle_status(struct selector_t *sel);
+
 #endif

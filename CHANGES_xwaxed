@@ -1,8 +1,9 @@
 v0.1 (work in progress)
 -----------------------
 
-** based on xwax v0.9-beta4 (by Mark Hills)
+** based on xwax v0.9-beta5 (by Mark Hills)
 
 * color edit (Sighter)
 * info rectangle (JvA)
 * deck protection (Yves Adler, JvA, Sighter)
+* played tracks (Yves Adler, JvA)

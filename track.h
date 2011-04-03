@@ -49,6 +49,8 @@ struct track_t {
    
     const char *importer, /* path to import script */
         *artist, *title;
+
+    struct record_t *record; /* last loaded record */
     
     size_t bytes; /* loaded in */
     int length, /* track length in samples */
