@@ -78,7 +78,8 @@
 #define LIBRARY_MIN_WIDTH 64
 #define LIBRARY_MIN_HEIGHT 64
 
-#define CRATES_HEIGHT 70
+#define CRATES_WIDTH 120
+#define ALBUMART_WIDTH 300
 
 #define DEFAULT_WIDTH 960
 #define DEFAULT_HEIGHT 720
@@ -1262,7 +1263,7 @@ static void draw_library(SDL_Surface *surface, const struct rect_t *rect,
     lines = rlists.h / FONT_SPACE;
     selector_set_lines(sel, lines);
 
-    split_left(&rlists, &rcrates, &rrecords, (rlists.w / 4), SPACER);
+    split_left(&rlists, &rcrates, &rrecords, CRATES_WIDTH + ALBUMART_WIDTH, SPACER);
     if (rcrates.w < LIBRARY_MIN_WIDTH) {
         draw_records(surface, rect, sel);
 		return;
@@ -1271,7 +1272,7 @@ static void draw_library(SDL_Surface *surface, const struct rect_t *rect,
 	draw_records(surface, &rrecords, sel);
 	
 	/* Split crates into crates, album art */
-    split_top(&rcrates, &rcrates, &ralbumart, CRATES_HEIGHT, SPACER);
+    split_left(&rcrates, &rcrates, &ralbumart, CRATES_WIDTH, SPACER);
 	draw_crates(surface, &rcrates, sel);
 	
 	if (selector_current(sel) != NULL) {
