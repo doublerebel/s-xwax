@@ -3,22 +3,57 @@
 #
 # Usage: albumart [FOLDER]
 #
-# Recursively searches FOLDER and creates 240px square albumart
+# Recursively searches FOLDER and creates 300px square albumart
 # folder.jpg thumbnails from any .jpg found in each folder
 # to be read by s-xwax
 #
 # if folder.jpg exists, it will be renamed to folder.orig.jpg
 #
-# TODO:
-# * option to delete all folder.jpgs 
-# * option to rename all folder.orig.jpg back to folder.jpg
-# * option for a dry run
-#
 
-find $1 -name '*jpg' | while read i; do
-    img=$(basename "$i");dir=$(dirname "$i");
-	if [ -e "$dir/folder.jpg" ]; then
-		mv "$dir/folder.jpg" "$dir/folder.orig.jpg";
-	fi
-    convert -thumbnail 240 "$i" "$dir/folder.jpg";
-done
+case $1 in
+	-d|--dry-run)
+		if [[ ! -d $2 ]]; then
+			echo "Error: No valid path specified."
+			exit 1
+		else
+			find $2 -name '*jpg' | while read i; do
+			    img=$(basename "$i");dir=$(dirname "$i");
+			    if [ -e "$dir/folder.jpg" ]; then
+		    	    echo "Dry run: mv $dir/folder.jpg $dir/folder.orig.jpg";
+			    fi
+			    echo "Dry run: convert -thumbnail 300 $i $dir/folder.jpg";
+			done
+		fi
+	;;
+    -h|--help)
+        echo "Usage: $0 [-h|--help] [-d|--dry-run] [-r|--reset] <path>"
+        exit 1
+    ;;
+    -r|--reset)
+		if [[ ! -d $2 ]]; then
+            echo "Error: No valid path specified."
+            exit 1
+        else
+	        find $2 -name 'folder.jpg' | while read i; do
+    	        img=$(basename "$i");dir=$(dirname "$i");
+        	    rm "$dir/folder.jpg"
+            	if [ -e "$dir/folder.orig.jpg" ]; then
+                	mv "$dir/folder.orig.jpg" "$dir/folder.jpg";
+	            fi
+    	    done
+		fi
+    ;;
+	?*)
+		find $1 -name '*jpg' | while read i; do
+		    img=$(basename "$i");dir=$(dirname "$i");
+			if [ -e "$dir/folder.jpg" ]; then
+				mv "$dir/folder.jpg" "$dir/folder.orig.jpg";
+			fi
+		    convert -thumbnail 300 "$i" "$dir/folder.jpg";
+		done
+	;;
+    *)
+        echo "No arguments provided.  Try -h|--help ?"
+        exit 1
+    ;;
+esac
