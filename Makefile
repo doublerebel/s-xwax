@@ -104,6 +104,7 @@ install:
 		$(INSTALL) -d $(EXECDIR)
 		$(INSTALL) scan $(EXECDIR)/xwax-scan
 		$(INSTALL) import $(EXECDIR)/xwax-import
+		$(INSTALL) albumart $(EXECDIR)/xwax-albumart
 		$(INSTALL) -d $(MANDIR)/man1
 		$(INSTALL) -m 0644 xwax.1 $(MANDIR)/man1/xwax.1
 		$(INSTALL) -d $(DOCDIR)/xwax
