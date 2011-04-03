@@ -13,7 +13,6 @@ Test for xsltproc dependency
 Install playlist.xsl into xwax_scan directory
 
 interface.c:
-Show blank square if album art is not found
 Add deck status at bottom of deck waveform
 Many calls to this:
     pixels = surface->pixels;

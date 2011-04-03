@@ -1230,6 +1230,7 @@ static void draw_albumart(SDL_Surface *surface, const struct rect_t *rect,
                          const char *status)
 {
 	SDL_Surface *image;
+	SDL_PixelFormat fmt;
 	int slashpos;
 	char albumart[300] = "";
 	FILE *file;
@@ -1242,9 +1243,14 @@ static void draw_albumart(SDL_Surface *surface, const struct rect_t *rect,
 		fclose(file);
 		image = IMG_Load(albumart);
 		fprintf(stderr, "Loaded albumart %s\n", albumart);
-		QuickBlit(image, surface, rect);
+	} else {
+		fmt = *(surface->format);
+        /* Create new blank SDL surface to overwrite album art */
+        image = SDL_CreateRGBSurface(SDL_SWSURFACE, ALBUMART_WIDTH, ALBUMART_WIDTH,
+                                    fmt.BitsPerPixel,
+                                    fmt.Rmask, fmt.Gmask, fmt.Bmask, fmt.Amask);
 	}
-
+	QuickBlit(image, surface, rect);
 }
 
 /* Display the music library, which consists of the query, and search
