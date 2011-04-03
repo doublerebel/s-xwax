@@ -1239,16 +1239,17 @@ static void draw_albumart(SDL_Surface *surface, const struct rect_t *rect,
 	strncpy(albumart, status, slashpos + 1);
 	strcat(albumart, "folder.jpg");
 
+	fmt = *(surface->format);
+    /* Create new blank SDL surface to overwrite album art */
+    image = SDL_CreateRGBSurface(SDL_SWSURFACE, ALBUMART_WIDTH, ALBUMART_WIDTH * 2,
+                                 fmt.BitsPerPixel,
+                                 fmt.Rmask, fmt.Gmask, fmt.Bmask, fmt.Amask);
+    QuickBlit(image, surface, rect);
+
 	if (file = fopen(albumart, "r")) {
 		fclose(file);
 		image = IMG_Load(albumart);
 		fprintf(stderr, "Loaded albumart %s\n", albumart);
-	} else {
-		fmt = *(surface->format);
-        /* Create new blank SDL surface to overwrite album art */
-        image = SDL_CreateRGBSurface(SDL_SWSURFACE, ALBUMART_WIDTH, ALBUMART_WIDTH,
-                                    fmt.BitsPerPixel,
-                                    fmt.Rmask, fmt.Gmask, fmt.Bmask, fmt.Amask);
 	}
 	QuickBlit(image, surface, rect);
 }
