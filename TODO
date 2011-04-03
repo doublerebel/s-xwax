@@ -11,11 +11,10 @@ Test for Imagemagick dependency
 Add config option to build with playlist support
 Test for xsltproc dependency
 Install playlist.xsl into xwax_scan directory
-Install albumart script into xwax_scan directory (?)
 
 interface.c:
-Add played_tracks patch
 Show blank square if album art is not found
+Add deck status at bottom of deck waveform
 Many calls to this:
     pixels = surface->pixels;
     bytes_per_pixel = surface->format->BytesPerPixel;
