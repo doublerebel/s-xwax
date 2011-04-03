@@ -72,14 +72,31 @@ endif
 
 all:		xwax
 
+# Dynamic versioning
+
+.PHONY:		FORCE
+
+.version:	FORCE
+		./mkversion -r
+
+VERSION = $(shell ./mkversion)
+
+# Main binary
+
 xwax:		$(OBJS) $(DEVICE_OBJS)
 xwax:		LDLIBS += $(SDL_LIBS) $(DEVICE_LIBS) -lm
 xwax:		LDFLAGS += -pthread
 
 interface.o:	CFLAGS += $(SDL_CFLAGS)
+interface.o:	CPPFLAGS += -DVERSION=\"$(VERSION)\"
+interface.o:	.version
 
 xwax.o:		CFLAGS += $(SDL_CFLAGS) $(DEVICE_CPPFLAGS)
 xwax.o:		CPPFLAGS += -DEXECDIR=\"$(EXECDIR)\"
+xwax.o:		CPPFLAGS += -DVERSION=\"$(VERSION)\"
+xwax.o:		.version
+
+# Install to system
 
 install:
 		$(INSTALL) -d $(BINDIR)
@@ -93,6 +110,13 @@ install:
 		$(INSTALL) -m 0644 CHANGES $(DOCDIR)/xwax/CHANGES
 		$(INSTALL) -m 0644 COPYING $(DOCDIR)/xwax/COPYING
 		$(INSTALL) -m 0644 README $(DOCDIR)/xwax/README
+
+# Distribution archive from Git source code
+
+.PHONY:		dist
+
+dist:		.version
+		./mkdist $(VERSION)
 
 # Manual tests
 
