@@ -1,10 +1,12 @@
-v0.1 (work in progress)
+v0.2
 -----------------------
+* Updated for xwax v0.9-beta5
+* 'Played tracks' crate (Yves Adler)
 
-** based on xwaxed v0.1 (by Sighter/JVA)
-** based on xwax v0.9-beta5 (by Mark Hills)
-
+v0.1
+-----------------------
+* based on xwax v0.9-beta4 (by Mark Hills)
+* based on xwaxed v0.1 (by Sighter/JVA)
 * Vertical stacked waveforms
 * Information overlay over waveforms
 * .xspf and .pls playlist support
-* 'Played tracks' crate (Yves Adler)

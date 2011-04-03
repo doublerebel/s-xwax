@@ -13,6 +13,8 @@ Built from [the latest xwax beta](http://www.xwax.co.uk/devel/xwax.git)
 
   * Deck protection patch by [Yves Adler](https://github.com/yadler/xwax-yadler)
 
+  * Played/Loaded tracks crate and indicator by [Yves Adler](https://github.com/yadler/xwax-yadler)
+
   * Stacked waveform, overlay, and album art UI by Charles Phillips
 
   * XSPF and PLS playlist scanner by Charles Phillips
