@@ -109,7 +109,7 @@ install:
 		$(INSTALL) -d $(DOCDIR)/xwax
 		$(INSTALL) -m 0644 CHANGES $(DOCDIR)/xwax/CHANGES
 		$(INSTALL) -m 0644 COPYING $(DOCDIR)/xwax/COPYING
-		$(INSTALL) -m 0644 README $(DOCDIR)/xwax/README
+		$(INSTALL) -m 0644 README.markdown $(DOCDIR)/xwax/README.markdown
 
 # Distribution archive from Git source code
 
