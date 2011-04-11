@@ -142,6 +142,7 @@ static const char *font_dirs[] = {
     "/usr/share/fonts/ttf-dejavu",
     "/usr/share/fonts/dejavu",
     "/usr/share/fonts/TTF",
+    "/usr/share/fonts/",
     NULL
 };
 
