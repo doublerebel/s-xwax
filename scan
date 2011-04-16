@@ -14,7 +14,7 @@ PATHNAME="$1"
 EXT=${PATHNAME##*.}
 
 if [ $EXT = "xspf" ]; then
-	xsltproc playlist.xsl $PATHNAME | awk '
+	xsltproc `dirname $0`/playlist.xsl $PATHNAME | awk '
 BEGIN { RS="" };
 {
 gsub(/file:\/\//, "");

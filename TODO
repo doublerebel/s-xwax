@@ -10,7 +10,6 @@ Add config option to build with album art support
 Test for Imagemagick dependency
 Add config option to build with playlist support
 Test for xsltproc dependency
-Install playlist.xsl into xwax_scan directory
 
 interface.c:
 Add deck status at bottom of deck waveform

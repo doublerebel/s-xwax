@@ -100,6 +100,7 @@ install:
 		$(INSTALL) xwax $(BINDIR)/xwax
 		$(INSTALL) -d $(EXECDIR)
 		$(INSTALL) scan $(EXECDIR)/xwax-scan
+		$(INSTALL) playlist.xsl $(EXECDIR)/playlist.xsl
 		$(INSTALL) import $(EXECDIR)/xwax-import
 		$(INSTALL) albumart $(EXECDIR)/xwax-albumart
 		$(INSTALL) -d $(MANDIR)/man1
