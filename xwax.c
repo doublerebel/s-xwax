@@ -4,12 +4,12 @@
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * version 2, as published by the Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License version 2 for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * version 2 along with this program; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
@@ -51,6 +51,8 @@
 #define DEFAULT_SCANNER EXECDIR "/xwax-scan"
 #define DEFAULT_TIMECODE "serato_2a"
 
+char *banner = "xwax " VERSION \
+    " (C) Copyright 2011 Charles Phillips <charles@doublerebel.com, Mark Hills <mark@pogo.org.uk>";
 
 static void usage(FILE *fd)
 {
@@ -94,9 +96,9 @@ static void usage(FILE *fd)
       "Decks and audio directories can be specified multiple times.\n\n"
       "Available timecodes (for use with -t):\n"
       "  serato_2a (default), serato_2b, serato_cd,\n"
-      "  traktor_a, traktor_b, mixvibes_v2, mixvibes_7inch\n\n");
+      "  traktor_a, traktor_b, mixvibes_v2, mixvibes_7inch\n\n"
+      "See the xwax(1) man page for full information and examples.\n");
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -115,8 +117,8 @@ int main(int argc, char *argv[])
     struct rt_t rt;
     struct interface_t iface;
     struct library_t library;
-    
-    fprintf(stderr, BANNER "\n\n" NOTICE "\n\n");
+
+    fprintf(stderr, "%s\n\n" NOTICE "\n\n", banner);
 
     if (rig_init(&rig) == -1)
         return -1;
@@ -134,10 +136,10 @@ int main(int argc, char *argv[])
     speed = 1.0;
 
     /* Skip over command name */
-    
+
     argv++;
     argc--;
-    
+
     while (argc > 0) {
 
         if (!strcmp(argv[0], "-h")) {
@@ -148,7 +150,7 @@ int main(int argc, char *argv[])
         } else if (!strcmp(argv[0], "-f")) {
 
             /* Set fragment size for subsequent devices */
-            
+
             if (argc < 2) {
                 fprintf(stderr, "-f requires an integer argument.\n");
                 return -1;
@@ -168,29 +170,29 @@ int main(int argc, char *argv[])
                         DEFAULT_OSS_FRAGMENT);
                 return -1;
             }
-            
+
             argv += 2;
             argc -= 2;
 
         } else if (!strcmp(argv[0], "-b")) {
-            
+
             /* Set number of buffers for subsequent devices */
-            
+
             if (argc < 2) {
                 fprintf(stderr, "-b requires an integer argument.\n");
                 return -1;
             }
-            
+
             oss_buffers = strtol(argv[1], &endptr, 10);
             if (*endptr != '\0') {
                 fprintf(stderr, "-b requires an integer argument.\n");
                 return -1;
             }
-            
+
             argv += 2;
             argc -= 2;
 #endif
-            
+
         } else if (!strcmp(argv[0], "-r")) {
 
             /* Set sample rate for subsequence devices */
@@ -207,28 +209,28 @@ int main(int argc, char *argv[])
             }
 
             argv += 2;
-            argc -= 2;  
+            argc -= 2;
 
 #ifdef WITH_ALSA
         } else if (!strcmp(argv[0], "-m")) {
-            
+
             /* Set size of ALSA buffer for subsequence devices */
-            
+
             if (argc < 2) {
                 fprintf(stderr, "-m requires an integer argument.\n");
                 return -1;
             }
-            
+
             alsa_buffer = strtol(argv[1], &endptr, 10);
             if (*endptr != '\0') {
                 fprintf(stderr, "-m requires an integer argument.\n");
                 return -1;
             }
-            
+
             argv += 2;
             argc -= 2;
 #endif
-            
+
         } else if (!strcmp(argv[0], "-d") || !strcmp(argv[0], "-a") ||
 		  !strcmp(argv[0], "-j"))
 	{
@@ -247,7 +249,7 @@ int main(int argc, char *argv[])
                         MAX_DECKS);
                 return -1;
             }
-            
+
             fprintf(stderr, "Initialising deck %d (%s)...\n", decks, argv[1]);
 
             /* Work out which device type we are using, and initialise
@@ -299,12 +301,12 @@ int main(int argc, char *argv[])
 
             /* The timecoder and player are driven by requests from
              * the audio device */
-            
+
             device_connect_timecoder(&device[decks], &timecoder[decks]);
             device_connect_player(&device[decks], &player[decks]);
 
             decks++;
-            
+
             argv += 2;
             argc -= 2;
 
@@ -318,7 +320,7 @@ int main(int argc, char *argv[])
             }
 
             timecode = argv[1];
-            
+
             argv += 2;
             argc -= 2;
 
@@ -365,7 +367,7 @@ int main(int argc, char *argv[])
 
             argv += 2;
             argc -= 2;
-                        
+
         } else if (!strcmp(argv[0], "-l") || !strcmp(argv[0], "-p")) {
 
             bool sort;
@@ -434,13 +436,13 @@ int main(int argc, char *argv[])
         player_clear(&player[n]);
         device_clear(&device[n]);
     }
-    
+
     timecoder_free_lookup();
     library_clear(&library);
     rt_clear(&rt);
     rig_clear(&rig);
-    
+
     fprintf(stderr, "Done.\n");
-    
+
     return 0;
 }
