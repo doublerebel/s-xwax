@@ -138,11 +138,11 @@
 
 static const char *font_dirs[] = {
     "/usr/X11R6/lib/X11/fonts/TTF",
-    "/usr/share/fonts/truetype/ttf-dejavu/", 
+    "/usr/share/fonts/truetype/ttf-dejavu",
     "/usr/share/fonts/ttf-dejavu",
     "/usr/share/fonts/dejavu",
     "/usr/share/fonts/TTF",
-    "/usr/share/fonts/",
+    "/usr/share/fonts",
     NULL
 };
 
