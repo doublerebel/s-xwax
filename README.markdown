@@ -9,7 +9,7 @@ Built from [the latest xwax beta](http://www.xwax.co.uk/devel/xwax.git)
 
   * Original source by Mark Hills
 
-  * Deck info UI by [Sighter/JVA](http://sighter.ath.cx/cgit/cgit.cgi/xwaxed/?h=played_tracks)
+  * Deck info UI by [Sighter/JVA](http://sighter.ath.cx/cgit/cgit.cgi/xwaxed/)
 
   * Deck protection patch by [Yves Adler](https://github.com/yadler/xwax-yadler)
 
@@ -19,9 +19,11 @@ Built from [the latest xwax beta](http://www.xwax.co.uk/devel/xwax.git)
 
   * XSPF and PLS playlist scanner by Charles Phillips
 
-[Screenshot of s-xwax 0.1a](http://www.doublerebel.com/images/s-xwax0.1a.png)
+**Screenshots:**
 
-*Video tearing due to lack of vsync in SDL 1.2, upgrading to 1.3 is in the TODO*
+  * [Screenshot of s-xwax 0.1a](http://www.doublerebel.com/images/s-xwax0.1a.png) *Video tearing due to lack of vsync in SDL 1.2, upgrading to 1.3 is in the TODO*
+
+  * [Screenshot of s-xwax 0.1b](http://www.doublerebel.com/images/Screenshot_s-xwax-0.1b.png)
 
 New album art feature reads **folder.jpg** from the folder containing
 the audio file.  The script **albumart** can be used to recursively

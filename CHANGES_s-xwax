@@ -1,11 +1,16 @@
-v0.2
+0.1b
 -----------------------
-* Updated for xwax v0.9-beta5
+* Updated for xwax 0.9-beta6+
 * 'Played tracks' crate (Yves Adler)
+* Album art displayed in track browser
+* Album art thumbnail script
+* Corrected scan regex
+* Playlist scanner installs automatically
+* Added OpenSUSE font path
 
-v0.1
+0.1a
 -----------------------
-* based on xwax v0.9-beta4 (by Mark Hills)
+* based on xwax 0.9-beta4 (by Mark Hills)
 * based on xwaxed v0.1 (by Sighter/JVA)
 * Vertical stacked waveforms
 * Information overlay over waveforms

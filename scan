@@ -58,7 +58,7 @@ s:/\([AB0-9]\+.\?[ _]\+\)\?\([^/]*\)\.[A-Z0-9]*$:\0\t\t\2:pi
 '
 else
 	if [ $EXT = "pls" ]; then
-		#skip the first two lines	
+		#skip the first two lines
 		#treat the entire file as a single record
 		#remove all unneeded .PLS lines
 		#put Title on the same line as Filename with tab separation

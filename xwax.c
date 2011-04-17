@@ -51,7 +51,7 @@
 #define DEFAULT_SCANNER EXECDIR "/xwax-scan"
 #define DEFAULT_TIMECODE "serato_2a"
 
-char *banner = "xwax " VERSION \
+char *banner = "s-xwax " VERSION \
     " (C) Copyright 2011 Charles Phillips <charles@doublerebel.com, Mark Hills <mark@pogo.org.uk>";
 
 static void usage(FILE *fd)
